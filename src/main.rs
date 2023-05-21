@@ -1,9 +1,11 @@
+extern crate scraper;
 use reqwest::header::{
-    HeaderMap, ACCEPT, ACCEPT_ENCODING, ACCEPT_LANGUAGE, CACHE_CONTROL, UPGRADE_INSECURE_REQUESTS,
+    HeaderMap, ACCEPT, ACCEPT_LANGUAGE, CACHE_CONTROL, UPGRADE_INSECURE_REQUESTS,
     USER_AGENT, COOKIE,
 };
 use reqwest::Client;
 use tokio::runtime::Runtime;
+use scraper::{Html, Selector};
 
 const URL: &str = "https://www.leboncoin.fr/recherche?category=9&locations=d_89%2Cd_21&real_estate_type=1&price=200000-350000&square=180-max&rooms=8-max";
 
@@ -39,7 +41,17 @@ fn main() {
 
         if response.status().is_success() {
             let body = response.text().await.unwrap();
-            println!("{}", body);
+            let document = Html::parse_document(body.as_str());
+            
+            // Sélecteur CSS pour la balise <a data-test-id="ad">
+            let selector = Selector::parse(r#"a[data-test-id="ad"]"#).unwrap();
+        
+            // Parcourir tous les éléments correspondants au sélecteur
+            for element in document.select(&selector) {
+                // Extraire le contenu textuel de chaque élément
+                let text = element.text().collect::<String>();
+                println!("Contenu de la balise : {}", text);
+            }
         } else {
             println!("La requête a échoué avec le code : {}", response.status());
         }
