@@ -38,20 +38,24 @@ async fn get_html_online() -> Result<String, String> {
     }
 }
 
+async fn read_from_file_or_get_online() -> String {
+    return match fs::read_to_string(&FILE_PATH) {
+        Ok(content) => {
+            println!("Using saved web page 📜");
+            content
+        }
+        Err(err) => {
+            println!("Erreur lors de la lecture du fichier : {}", err);
+            get_html_online().await.unwrap()
+        }
+    };
+}
+
 fn main() {
     let rt = Runtime::new().unwrap();
 
     rt.block_on(async {
-        let body = match fs::read_to_string(&FILE_PATH) {
-            Ok(content) => {
-                println!("Using saved web page");
-                content
-            }
-            Err(err) => {
-                println!("Erreur lors de la lecture du fichier : {}", err);
-                get_html_online().await.unwrap()
-            }
-        };
+        let body = read_from_file_or_get_online().await;
 
         let document = Html::parse_document(body.as_str());
 
