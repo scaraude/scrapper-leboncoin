@@ -51,13 +51,13 @@ async fn read_from_file_or_get_online() -> String {
     };
 }
 
-fn check_if_is_price(input: &str) -> bool {
+fn check_is_price(input: &str) -> bool {
     let regex = Regex::new(r"\b(?:[1-9]\d{0,2}(?:[ \xa0]\d{3})*|0)(?:\.\d{1,2})?[ \xa0]*€(?:\s|$)")
         .unwrap();
     regex.is_match(input)
 }
 
-fn check_if_is_price_per_meter_square(input: &str) -> bool {
+fn check_is_price_per_meter_square(input: &str) -> bool {
     input.ends_with("€/m²")
 }
 
@@ -66,6 +66,12 @@ fn check_is_location(input: &str) -> bool {
     regex.is_match(input)
 }
 
+#[derive(Debug)]
+struct DataFromAds {
+    price: String,
+    price_per_square_meter: String,
+    location: String,
+}
 fn main() {
     let rt = Runtime::new().unwrap();
 
@@ -79,17 +85,30 @@ fn main() {
         for element in document.select(&selector) {
             let children_with_text = element.text().enumerate();
 
+            let mut ads = DataFromAds {
+                price: String::new(),
+                price_per_square_meter: String::new(),
+                location: String::new(),
+            };
+
             for child_with_text in children_with_text {
                 let childs_text = child_with_text.1;
 
-                if check_if_is_price(childs_text) {
-                    println!("La chaîne '{}' est un prix.", childs_text);
-                } else if check_if_is_price_per_meter_square(childs_text) {
-                    println!("La chaîne '{}' est un prix au mètre carré.", childs_text);
+                if check_is_price(childs_text) {
+                    ads.price = String::from(childs_text);
+                } else if check_is_price_per_meter_square(childs_text) {
+                    ads.price_per_square_meter = String::from(childs_text);
                 } else if check_is_location(childs_text) {
-                    println!("La chaîne '{}' est une localisation", childs_text);
+                    ads.location = String::from(childs_text);
+                } else {
+                    println!(
+                        "La chaîne '{}' ne correspond à aucune des datas collectées",
+                        childs_text
+                    );
                 }
             }
+
+            println!("{:?}", ads)
         }
     });
 }
