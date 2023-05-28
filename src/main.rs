@@ -1,4 +1,5 @@
 extern crate scraper;
+use regex::Regex;
 use reqwest::header::{HeaderMap, ACCEPT, ACCEPT_LANGUAGE, COOKIE, USER_AGENT};
 use reqwest::Client;
 use scraper::{Html, Selector};
@@ -12,7 +13,6 @@ fn get_header() -> HeaderMap {
     let mut headers = HeaderMap::new();
     headers.insert(USER_AGENT, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36".parse().unwrap());
     headers.insert(ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7".parse().unwrap());
-    // headers.insert(ACCEPT_ENCODING, "gzip, deflate, br".parse().unwrap());
     headers.insert(
         ACCEPT_LANGUAGE,
         "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7".parse().unwrap(),
@@ -51,6 +51,21 @@ async fn read_from_file_or_get_online() -> String {
     };
 }
 
+fn check_if_is_price(input: &str) -> bool {
+    let regex = Regex::new(r"\b(?:[1-9]\d{0,2}(?:[ \xa0]\d{3})*|0)(?:\.\d{1,2})?[ \xa0]*€(?:\s|$)")
+        .unwrap();
+    regex.is_match(input)
+}
+
+fn check_if_is_price_per_meter_square(input: &str) -> bool {
+    input.ends_with("€/m²")
+}
+
+fn check_is_location(input: &str) -> bool {
+    let regex = Regex::new(r"(?i)\b[a-zÀ-ÿ' -]+\b\s+\d{2}[ ]?\d{3}\b").unwrap();
+    regex.is_match(input)
+}
+
 fn main() {
     let rt = Runtime::new().unwrap();
 
@@ -62,10 +77,18 @@ fn main() {
         let selector = Selector::parse(r#"a[data-test-id="ad"]"#).unwrap();
 
         for element in document.select(&selector) {
-            println!("Contenu de la balise :");
             let children_with_text = element.text().enumerate();
+
             for child_with_text in children_with_text {
-                println!("Child {}: {}", child_with_text.0, child_with_text.1)
+                let childs_text = child_with_text.1;
+
+                if check_if_is_price(childs_text) {
+                    println!("La chaîne '{}' est un prix.", childs_text);
+                } else if check_if_is_price_per_meter_square(childs_text) {
+                    println!("La chaîne '{}' est un prix au mètre carré.", childs_text);
+                } else if check_is_location(childs_text) {
+                    println!("La chaîne '{}' est une localisation", childs_text);
+                }
             }
         }
     });
