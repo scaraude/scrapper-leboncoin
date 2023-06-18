@@ -73,6 +73,7 @@ struct DataFromAds {
     location: String,
 }
 fn main() {
+    let start = Instant::now();
     let rt = Runtime::new().unwrap();
 
     rt.block_on(async {
@@ -111,4 +112,7 @@ fn main() {
             println!("{:?}", ads)
         }
     });
+
+    let elapsed = start.elapsed();
+    println!("Temps écoulé: {:?}", elapsed);
 }
