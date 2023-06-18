@@ -1,9 +1,11 @@
+mod ads;
+
+use ads::{Ads, Location};
 extern crate scraper;
 use regex::Regex;
 use reqwest::header::{HeaderMap, ACCEPT, ACCEPT_LANGUAGE, COOKIE, USER_AGENT};
 use reqwest::Client;
 use scraper::{Html, Selector};
-use std::fmt;
 use std::fs;
 use std::num::ParseIntError;
 use time::Instant;
@@ -105,46 +107,6 @@ fn parse_city_and_postal_code(location: &str) -> Option<Location> {
     }
 }
 
-#[derive(Debug)]
-struct Ads {
-    price: Option<u64>,
-    price_per_square_meter: Option<u32>,
-    location: Option<Location>,
-}
-
-impl fmt::Display for Ads {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(price) = self.price {
-            write!(f, "Price: {}\n", price)?;
-        }
-        if let Some(price_per_square_meter) = self.price_per_square_meter {
-            write!(f, "Price per square meter: {}\n", price_per_square_meter)?;
-        }
-        if let Some(location) = &self.location {
-            write!(f, "{}", location)?;
-        }
-        Ok(())
-    }
-}
-
-#[derive(Debug)]
-struct Location {
-    city_name: Option<String>,
-    postal_code: Option<String>,
-}
-
-impl fmt::Display for Location {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(city_name) = &self.city_name {
-            write!(f, "City: {}\n", city_name)?;
-        }
-        if let Some(postal_code) = &self.postal_code {
-            write!(f, "Postal code: {}\n", postal_code)?;
-        }
-        Ok(())
-    }
-}
-
 fn main() {
     let start = Instant::now();
     let rt = Runtime::new().unwrap();
@@ -159,36 +121,28 @@ fn main() {
         for element in document.select(&selector) {
             let children_with_text = element.text().enumerate();
 
-            let mut ads = Ads {
-                price: None,
-                price_per_square_meter: None,
-                location: None,
-            };
+            let mut ads = Ads::new(None, None, None);
 
             for child_with_text in children_with_text {
                 let childs_text = child_with_text.1;
 
-                if check_is_price(childs_text) {
-                    match convert_price_string_to_u64(childs_text) {
-                        Ok(number) => ads.price = Some(number),
-                        Err(err) => {
-                            println!("La chaîne ne représente pas un entier valide: {}", err)
-                        }
+                match childs_text {
+                    childs_text if check_is_price(childs_text) => {
+                        ads.price = convert_price_string_to_u64(childs_text).ok();
                     }
-                } else if check_is_price_per_meter_square(childs_text) {
-                    match convert_price_per_meter_square_string_to_u64(childs_text) {
-                        Ok(number) => ads.price_per_square_meter = Some(number),
-                        Err(err) => {
-                            println!("La chaîne ne représente pas un entier valide: {}", err)
-                        }
+                    childs_text if check_is_price_per_meter_square(childs_text) => {
+                        ads.price_per_square_meter =
+                            convert_price_per_meter_square_string_to_u64(childs_text).ok();
                     }
-                } else if check_is_location(childs_text) {
-                    ads.location = parse_city_and_postal_code(childs_text);
-                } else {
-                    // println!(
-                    //     "La chaîne '{}' ne correspond à aucune des datas collectées",
-                    //     childs_text
-                    // );
+                    childs_text if check_is_location(childs_text) => {
+                        ads.location = parse_city_and_postal_code(childs_text);
+                    }
+                    _ => {
+                        println!(
+                            "La chaîne '{}' ne correspond à aucune des datas collectées",
+                            childs_text
+                        );
+                    }
                 }
             }
 
