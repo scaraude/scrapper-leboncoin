@@ -12,7 +12,16 @@ pub async fn read_from_file_or_get_online() -> String {
         }
         Err(err) => {
             println!("Erreur lors de la lecture du fichier : {}", err);
-            html_query::get_html_online().await.unwrap()
+            let web_page = html_query::get_html_online().await.unwrap();
+            match save_web_page(web_page.clone()).await {
+                Ok(_) => println!("web page saved 💾"),
+                Err(_) => println!("Error while saving the page ❌"),
+            }
+            web_page
         }
     };
+}
+
+pub async fn save_web_page(web_page: String) -> std::io::Result<()> {
+    fs::write(FILE_PATH, web_page)
 }
