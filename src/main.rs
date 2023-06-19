@@ -1,6 +1,6 @@
-mod ads;
+mod ad;
 
-use ads::{Ads, Location};
+use ad::{Ad, Location};
 extern crate scraper;
 use regex::Regex;
 use reqwest::header::{HeaderMap, ACCEPT, ACCEPT_LANGUAGE, COOKIE, USER_AGENT};
@@ -107,6 +107,28 @@ fn parse_city_and_postal_code(location: &str) -> Option<Location> {
     }
 }
 
+fn format_data_from_ad(childs_text: &str, mut ad: Ad) -> Ad {
+    match childs_text {
+        childs_text if check_is_price(childs_text) => {
+            (ad).price = convert_price_string_to_u64(childs_text).ok();
+        }
+        childs_text if check_is_price_per_meter_square(childs_text) => {
+            ad.price_per_square_meter =
+                convert_price_per_meter_square_string_to_u64(childs_text).ok();
+        }
+        childs_text if check_is_location(childs_text) => {
+            ad.location = parse_city_and_postal_code(childs_text);
+        }
+        _ => {
+            println!(
+                "La chaîne '{}' ne correspond à aucune des datas collectées",
+                childs_text
+            );
+        }
+    }
+    ad
+}
+
 fn main() {
     let start = Instant::now();
     let rt = Runtime::new().unwrap();
@@ -121,32 +143,15 @@ fn main() {
         for element in document.select(&selector) {
             let children_with_text = element.text().enumerate();
 
-            let mut ads = Ads::new(None, None, None);
+            let mut ad = Ad::new(None, None, None);
 
             for child_with_text in children_with_text {
                 let childs_text = child_with_text.1;
 
-                match childs_text {
-                    childs_text if check_is_price(childs_text) => {
-                        ads.price = convert_price_string_to_u64(childs_text).ok();
-                    }
-                    childs_text if check_is_price_per_meter_square(childs_text) => {
-                        ads.price_per_square_meter =
-                            convert_price_per_meter_square_string_to_u64(childs_text).ok();
-                    }
-                    childs_text if check_is_location(childs_text) => {
-                        ads.location = parse_city_and_postal_code(childs_text);
-                    }
-                    _ => {
-                        println!(
-                            "La chaîne '{}' ne correspond à aucune des datas collectées",
-                            childs_text
-                        );
-                    }
-                }
+                ad = format_data_from_ad(childs_text, ad);
             }
 
-            println!("{}", ads)
+            println!("{}", ad)
         }
     });
 

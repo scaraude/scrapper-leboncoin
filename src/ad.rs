@@ -1,13 +1,13 @@
 use std::fmt;
 
 #[derive(Debug)]
-pub struct Ads {
+pub struct Ad {
     pub price: Option<u64>,
     pub price_per_square_meter: Option<u32>,
     pub location: Option<Location>,
 }
 
-impl fmt::Display for Ads {
+impl fmt::Display for Ad {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(price) = self.price {
             write!(f, "Price: {}\n", price)?;
@@ -22,13 +22,13 @@ impl fmt::Display for Ads {
     }
 }
 
-impl Ads {
+impl Ad {
     pub fn new(
         price: Option<u64>,
         price_per_square_meter: Option<u32>,
         location: Option<Location>,
     ) -> Self {
-        Ads {
+        Ad {
             price,
             price_per_square_meter,
             location,
