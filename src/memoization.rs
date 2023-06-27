@@ -10,8 +10,8 @@ pub async fn read_from_file_or_get_online() -> String {
             println!("Using saved web page 📜");
             content
         }
-        Err(err) => {
-            println!("Erreur lors de la lecture du fichier : {}", err);
+        Err(_err) => {
+            println!("No record found ❌");
             let web_page = html_query::get_html_online().await.unwrap();
 
             match save_web_page(web_page.clone()).await {

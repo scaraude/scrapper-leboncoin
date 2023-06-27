@@ -3,15 +3,25 @@ mod html_query;
 mod memoization;
 mod parser;
 
-use ad::Ad;
-use scraper::{Html, Selector};
+extern crate dotenv;
 extern crate scraper;
+
+use ad::Ad;
+use dotenv::dotenv;
+use scraper::{Html, Selector};
 use time::Instant;
 use tokio::runtime::Runtime;
 
 fn main() {
     let start = Instant::now();
     let rt = Runtime::new().unwrap();
+
+    dotenv().unwrap_or_else(|err| {
+        panic!(
+            "Erreur lors du chargement des variables d'environnement : {}",
+            err
+        );
+    });
 
     rt.block_on(async {
         let body = memoization::read_from_file_or_get_online().await;
