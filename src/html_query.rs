@@ -38,9 +38,9 @@ fn get_header() -> HeaderMap {
 pub async fn get_html_online() -> Result<String, String> {
     let client = Client::new();
 
-    let headers = get_header();
+    let headers: HeaderMap = get_header();
 
-    let url = generate_url_with_params(BASE_URL, get_url_params_from_file());
+    let url = generate_url_with_params();
     let response = client.get(url).headers(headers).send().await.unwrap();
 
     if response.status().is_success() {
@@ -64,8 +64,9 @@ fn get_url_params_from_file() -> Map<String, Value> {
         .expect("Erreur lors de la désérialisation du fichier de configuration")
 }
 
-fn generate_url_with_params(base_url: &str, url_params: Map<String, Value>) -> String {
-    let mut url = Url::parse(base_url).expect("Invalid base URL");
+fn generate_url_with_params() -> String {
+    let mut url = Url::parse(BASE_URL).expect("Invalid base URL");
+    let url_params: Map<String, Value> = get_url_params_from_file();
 
     for (key, value) in url_params {
         let value_string: String = match value {
