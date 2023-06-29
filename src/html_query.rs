@@ -22,7 +22,7 @@ struct UrlParams {
 
 const BASE_URL: &str = "https://www.leboncoin.fr/recherche";
 
-fn get_header() -> HeaderMap {
+fn get_headers() -> HeaderMap {
     let mut headers = HeaderMap::new();
     let user_agent = env::var("USER_AGENT").unwrap().parse().unwrap();
     let cookie = env::var("COOKIE").unwrap().parse().unwrap();
@@ -41,7 +41,7 @@ fn get_header() -> HeaderMap {
 pub async fn get_html_online() -> Result<String, String> {
     let client = Client::new();
 
-    let headers: HeaderMap = get_header();
+    let headers: HeaderMap = get_headers();
 
     let url = generate_url_with_params();
     let response = client.get(url).headers(headers).send().await.unwrap();
