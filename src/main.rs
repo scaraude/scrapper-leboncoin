@@ -2,6 +2,7 @@ mod ad;
 mod html_query;
 mod memoization;
 mod parser;
+mod web_explorator;
 
 extern crate dotenv;
 extern crate scraper;
