@@ -22,7 +22,7 @@ struct UrlParams {
 
 const BASE_URL: &str = "https://www.leboncoin.fr/recherche";
 
-fn get_headers() -> HeaderMap {
+pub fn get_headers() -> HeaderMap {
     let mut headers = HeaderMap::new();
     let user_agent = env::var("USER_AGENT").unwrap().parse().unwrap();
     let cookie = env::var("COOKIE").unwrap().parse().unwrap();
@@ -55,7 +55,7 @@ pub async fn get_html_online() -> Result<String, String> {
     }
 }
 
-fn get_url_params_from_file() -> Map<String, Value> {
+pub fn get_url_params_from_file() -> Map<String, Value> {
     let mut file =
         File::open("url_params.json").expect("Impossible d'ouvrir le fichier de configuration");
 

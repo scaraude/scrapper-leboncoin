@@ -1,3 +1,5 @@
+use std::{thread::sleep, time::Duration};
+
 use reqwest::header::HeaderMap;
 use serde_json::{Map, Value};
 use url::Url;
@@ -19,7 +21,7 @@ impl WebExplorator {
             client: reqwest::blocking::Client::new(),
             base_url: base_url.to_owned(),
             page: 0,
-            total_page: 0,
+            total_page: 10,
         }
     }
 
@@ -35,12 +37,19 @@ impl WebExplorator {
             url.query_pairs_mut()
                 .append_pair(key.as_str(), value_string.as_str());
         }
+
+        url.query_pairs_mut()
+            .append_pair("page", self.page.to_string().as_str());
+
         url.to_string()
     }
 
     fn get_one_page(&self) -> reqwest::Result<String> {
+        let url = self.format_url();
+        println!("get_one_page => url => {url}");
+
         self.client
-            .get(self.format_url())
+            .get(url)
             .headers(self.headers.to_owned())
             .send()
             .unwrap()
@@ -53,8 +62,10 @@ impl WebExplorator {
         }
 
         self.page += 1;
+        let webpage = self.get_one_page().unwrap();
+        sleep(Duration::from_secs(1));
 
-        Ok(Some(self.get_one_page().unwrap()))
+        Ok(Some(webpage))
     }
 }
 
@@ -66,6 +77,37 @@ impl Iterator for WebExplorator {
             Ok(Some(html_text)) => Some(Ok(html_text)),
             Ok(None) => None,
             Err(err) => Some(Err(err)),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::html_query::{get_headers, get_url_params_from_file};
+
+    use super::WebExplorator;
+    extern crate dotenv;
+    use dotenv::dotenv;
+
+    #[test]
+    #[ignore]
+    fn test_iterator() {
+        dotenv().unwrap_or_else(|err| {
+            panic!(
+                "Erreur lors du chargement des variables d'environnement : {}",
+                err
+            );
+        });
+
+        let web_explorator = WebExplorator::new(
+            "https://www.leboncoin.fr/recherche",
+            get_url_params_from_file(),
+            get_headers(),
+        );
+
+        for webpage in web_explorator {
+            dbg!(&webpage);
+            assert!(webpage.is_ok());
         }
     }
 }
