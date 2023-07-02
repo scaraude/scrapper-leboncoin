@@ -1,20 +1,17 @@
 mod ad;
 mod helper;
 mod memoization;
+mod pagined_website_explorator;
 mod parser;
-mod web_explorator;
-
 extern crate dotenv;
 extern crate scraper;
-
-use std::vec;
-
+use crate::pagined_website_explorator::PaginedWebsite;
 use ad::Ad;
 use dotenv::dotenv;
 use scraper::{Html, Selector};
+use std::vec;
 use time::Instant;
 
-use crate::web_explorator::WebExplorator;
 const BASE_URL: &str = "https://www.leboncoin.fr/recherche";
 
 fn main() {
@@ -29,7 +26,7 @@ fn main() {
 
     let mut ads: Vec<Ad> = vec![];
 
-    for webpage in WebExplorator::new(
+    for webpage in PaginedWebsite::new(
         BASE_URL,
         helper::get_url_params_from_file(),
         helper::get_headers(),

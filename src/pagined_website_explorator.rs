@@ -3,7 +3,7 @@ use serde_json::{Map, Value};
 use std::{thread::sleep, time::Duration};
 use url::Url;
 
-pub struct WebExplorator {
+pub struct PaginedWebsite {
     client: reqwest::blocking::Client,
     headers: HeaderMap,
     base_url: String,
@@ -12,15 +12,15 @@ pub struct WebExplorator {
     total_page: u32,
 }
 
-impl WebExplorator {
-    pub fn new(base_url: &str, params: Map<String, Value>, headers: HeaderMap) -> WebExplorator {
-        WebExplorator {
+impl PaginedWebsite {
+    pub fn new(base_url: &str, params: Map<String, Value>, headers: HeaderMap) -> PaginedWebsite {
+        PaginedWebsite {
             params,
             headers,
             client: reqwest::blocking::Client::new(),
             base_url: base_url.to_owned(),
             page: 0,
-            total_page: 10,
+            total_page: 1,
         }
     }
 
@@ -69,7 +69,7 @@ impl WebExplorator {
     }
 }
 
-impl Iterator for WebExplorator {
+impl Iterator for PaginedWebsite {
     type Item = reqwest::Result<String>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -86,7 +86,7 @@ mod tests {
 
     use crate::helper::{get_headers, get_url_params_from_file};
 
-    use super::WebExplorator;
+    use super::PaginedWebsite;
     extern crate dotenv;
     use dotenv::dotenv;
 
@@ -100,7 +100,7 @@ mod tests {
             );
         });
 
-        let web_explorator = WebExplorator::new(
+        let web_explorator = PaginedWebsite::new(
             "https://www.leboncoin.fr/recherche",
             get_url_params_from_file(),
             get_headers(),
