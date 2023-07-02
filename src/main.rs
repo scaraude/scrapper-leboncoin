@@ -53,13 +53,13 @@ fn main() {
         }
     }
 
-    println!(
-        "-------------------------------- ADS
-        {:?}`",
-        ads
-    );
+    let number_of_ads = ads.len();
 
-    println!("total ads: {}", ads.len());
+    for ad in ads {
+        println!("{}", ad);
+    }
+
+    println!("total ads: {}", number_of_ads);
 
     let elapsed = start.elapsed();
     println!("Temps écoulé: {:?}", elapsed);
