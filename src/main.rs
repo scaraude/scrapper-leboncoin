@@ -46,7 +46,23 @@ fn main() {
             for child_with_text in children_with_text {
                 let childs_text = child_with_text.1;
 
-                ad = parser::append_parsed_data(childs_text, ad);
+                match parser::find_data_type(childs_text) {
+                    parser::DataType::Location(location) => {
+                        ad.location = Some(location);
+                    }
+                    parser::DataType::Price(price) => {
+                        ad.price = Some(price);
+                    }
+                    parser::DataType::PricePerSquare(square) => {
+                        ad.price_per_square_meter = Some(square);
+                    }
+                    parser::DataType::None => {
+                        println!(
+                            "La chaîne '{}' ne correspond à aucune des datas collectées",
+                            childs_text
+                        );
+                    }
+                }
             }
 
             ads.push(ad);

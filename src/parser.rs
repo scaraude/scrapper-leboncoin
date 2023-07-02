@@ -1,7 +1,14 @@
 use regex::Regex;
 use std::num::ParseIntError;
 
-use crate::ad::{Ad, Location};
+use crate::ad::Location;
+
+pub enum DataType {
+    Price(u64),
+    PricePerSquare(u32),
+    Location(Location),
+    None,
+}
 
 fn check_is_price(input: &str) -> bool {
     let regex = Regex::new(r"\b(?:[1-9]\d{0,2}(?:[ \xa0]\d{3})*|0)(?:\.\d{1,2})?[ \xa0]*€(?:\s|$)")
@@ -23,7 +30,7 @@ fn convert_price_string_to_u64(price_as_string: &str) -> Result<u64, ParseIntErr
     cleaned_input.parse::<u64>()
 }
 
-fn convert_price_per_meter_square_string_to_u64(
+fn convert_price_per_meter_square_string_to_u32(
     price_per_meter_square_as_string: &str,
 ) -> Result<u32, ParseIntError> {
     let cleaned_input: String = price_per_meter_square_as_string
@@ -55,24 +62,14 @@ fn parse_city_and_postal_code(location: &str) -> Option<Location> {
     }
 }
 
-pub fn append_parsed_data(childs_text: &str, mut ad: Ad) -> Ad {
-    match childs_text {
-        childs_text if check_is_price(childs_text) => {
-            (ad).price = convert_price_string_to_u64(childs_text).ok();
-        }
-        childs_text if check_is_price_per_meter_square(childs_text) => {
-            ad.price_per_square_meter =
-                convert_price_per_meter_square_string_to_u64(childs_text).ok();
-        }
-        childs_text if check_is_location(childs_text) => {
-            ad.location = parse_city_and_postal_code(childs_text);
-        }
-        _ => {
-            println!(
-                "La chaîne '{}' ne correspond à aucune des datas collectées",
-                childs_text
-            );
-        }
+pub fn find_data_type(text: &str) -> DataType {
+    if check_is_price(text) {
+        DataType::Price(convert_price_string_to_u64(text).unwrap())
+    } else if check_is_price_per_meter_square(text) {
+        DataType::PricePerSquare(convert_price_per_meter_square_string_to_u32(text).unwrap())
+    } else if check_is_location(text) {
+        DataType::Location(parse_city_and_postal_code(text).unwrap())
+    } else {
+        DataType::None
     }
-    ad
 }
