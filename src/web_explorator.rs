@@ -1,3 +1,4 @@
+use log::info;
 use std::{thread::sleep, time::Duration};
 
 use reqwest::header::HeaderMap;
@@ -46,7 +47,7 @@ impl WebExplorator {
 
     fn get_one_page(&self) -> reqwest::Result<String> {
         let url = self.format_url();
-        println!("get_one_page => url => {url}");
+        info!("get_one_page => url => {url}");
 
         self.client
             .get(url)
@@ -63,6 +64,7 @@ impl WebExplorator {
 
         self.page += 1;
         let webpage = self.get_one_page().unwrap();
+        info!("wait...");
         sleep(Duration::from_secs(1));
 
         Ok(Some(webpage))
@@ -83,7 +85,8 @@ impl Iterator for WebExplorator {
 
 #[cfg(test)]
 mod tests {
-    use crate::html_query::{get_headers, get_url_params_from_file};
+
+    use crate::helper::{get_headers, get_url_params_from_file};
 
     use super::WebExplorator;
     extern crate dotenv;

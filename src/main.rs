@@ -1,5 +1,5 @@
 mod ad;
-mod html_query;
+mod helper;
 mod memoization;
 mod parser;
 mod web_explorator;
@@ -7,15 +7,19 @@ mod web_explorator;
 extern crate dotenv;
 extern crate scraper;
 
+use std::vec;
+
 use ad::Ad;
 use dotenv::dotenv;
+use log::info;
 use scraper::{Html, Selector};
 use time::Instant;
-use tokio::runtime::Runtime;
+
+use crate::web_explorator::WebExplorator;
+const BASE_URL: &str = "https://www.leboncoin.fr/recherche";
 
 fn main() {
     let start = Instant::now();
-    let rt = Runtime::new().unwrap();
 
     dotenv().unwrap_or_else(|err| {
         panic!(
@@ -24,10 +28,14 @@ fn main() {
         );
     });
 
-    rt.block_on(async {
-        let body = memoization::read_from_file_or_get_online().await;
+    let mut ads: Vec<Ad> = vec![];
 
-        let document = Html::parse_document(body.as_str());
+    for webpage in WebExplorator::new(
+        BASE_URL,
+        helper::get_url_params_from_file(),
+        helper::get_headers(),
+    ) {
+        let document = Html::parse_document(webpage.unwrap().as_str());
 
         let selector = Selector::parse(r#"a[data-test-id="ad"]"#).unwrap();
 
@@ -42,10 +50,16 @@ fn main() {
                 ad = parser::parse_data_from_ad(childs_text, ad);
             }
 
-            println!("{}", ad)
+            ads.push(ad);
         }
-    });
+    }
+
+    info!(
+        "-------------------------------- ADS
+        {:?}`",
+        ads
+    );
 
     let elapsed = start.elapsed();
-    println!("Temps écoulé: {:?}", elapsed);
+    info!("Temps écoulé: {:?}", elapsed);
 }
