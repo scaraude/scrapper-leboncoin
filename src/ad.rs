@@ -5,6 +5,9 @@ pub struct Ad {
     pub price: Option<u64>,
     pub price_per_square_meter: Option<u32>,
     pub location: Option<Location>,
+    pub surface: Option<u64>,
+    // pub title: Option<String>,
+    // pub publication_date: Date,
 }
 
 impl fmt::Display for Ad {
@@ -17,6 +20,9 @@ impl fmt::Display for Ad {
         }
         if let Some(location) = &self.location {
             write!(f, "{}", location)?;
+        }
+        if let Some(surface) = &self.surface {
+            write!(f, "Surface: {} m²\n", surface)?;
         }
         Ok(())
     }
@@ -32,6 +38,7 @@ impl Ad {
             price,
             price_per_square_meter,
             location,
+            surface: None,
         }
     }
 }
