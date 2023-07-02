@@ -1,12 +1,13 @@
 use regex::Regex;
 use std::num::ParseIntError;
 
-use crate::ad::Location;
+use crate::ad::{Location, SellerType};
 
 pub enum DataType {
     Price(u64),
     PricePerSquare(u32),
     Location(Location),
+    SellerType(SellerType),
     None,
 }
 
@@ -62,6 +63,10 @@ fn parse_city_and_postal_code(location: &str) -> Option<Location> {
     }
 }
 
+fn check_is_professional(input: &str) -> bool {
+    input.eq("Pro")
+}
+
 pub fn find_data_type(text: &str) -> DataType {
     if check_is_price(text) {
         DataType::Price(convert_price_string_to_u64(text).unwrap())
@@ -69,7 +74,28 @@ pub fn find_data_type(text: &str) -> DataType {
         DataType::PricePerSquare(convert_price_per_meter_square_string_to_u32(text).unwrap())
     } else if check_is_location(text) {
         DataType::Location(parse_city_and_postal_code(text).unwrap())
+    } else if check_is_professional(text) {
+        DataType::SellerType(SellerType::Professional)
     } else {
         DataType::None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_check_is_pro_with_pro() {
+        assert_eq!(check_is_professional("Pro"), true);
+    }
+
+    #[test]
+    fn test_check_is_pro_with_non_pro() {
+        assert_eq!(check_is_professional("NonPro"), false);
+        assert_eq!(check_is_professional(" Pro"), false);
+        assert_eq!(check_is_professional("Pro "), false);
+        assert_eq!(check_is_professional("something with Pro in it"), false);
+        assert_eq!(check_is_professional("somethingwithProinit"), false);
     }
 }

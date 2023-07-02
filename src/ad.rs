@@ -1,11 +1,27 @@
 use std::fmt;
 
 #[derive(Debug)]
+pub enum SellerType {
+    Owner,
+    Professional,
+}
+
+impl fmt::Display for SellerType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            SellerType::Owner => write!(f, "Owner"),
+            SellerType::Professional => write!(f, "Professional"),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct Ad {
     pub price: Option<u64>,
     pub price_per_square_meter: Option<u32>,
     pub location: Option<Location>,
     pub surface: Option<u64>,
+    pub seller_type: SellerType,
     // pub title: Option<String>,
     // pub publication_date: Date,
 }
@@ -24,6 +40,9 @@ impl fmt::Display for Ad {
         if let Some(surface) = &self.surface {
             write!(f, "Surface: {} m²\n", surface)?;
         }
+
+        write!(f, "Seller type: {}\n", &self.seller_type)?;
+
         Ok(())
     }
 }
@@ -39,6 +58,7 @@ impl Ad {
             price_per_square_meter,
             location,
             surface: None,
+            seller_type: SellerType::Owner,
         }
     }
 }

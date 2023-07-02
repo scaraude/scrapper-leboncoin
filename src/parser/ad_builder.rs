@@ -23,6 +23,9 @@ pub fn get_ad_from_children_with_text(children_with_text: Enumerate<Text<'_>>) -
             parser::DataType::PricePerSquare(square) => {
                 ad.price_per_square_meter = Some(square);
             }
+            parser::DataType::SellerType(seller_type) => {
+                ad.seller_type = seller_type;
+            }
             parser::DataType::None => {
                 println!(
                     "La chaîne '{}' ne correspond à aucune des datas collectées",
