@@ -54,7 +54,7 @@ fn parse_city_and_postal_code(location: &str) -> Option<Location> {
     }
 }
 
-pub fn parse_data_from_ad(childs_text: &str, mut ad: Ad) -> Ad {
+pub fn append_parsed_data(childs_text: &str, mut ad: Ad) -> Ad {
     match childs_text {
         childs_text if check_is_price(childs_text) => {
             (ad).price = convert_price_string_to_u64(childs_text).ok();

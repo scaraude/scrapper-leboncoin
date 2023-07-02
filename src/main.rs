@@ -11,7 +11,6 @@ use std::vec;
 
 use ad::Ad;
 use dotenv::dotenv;
-use log::info;
 use scraper::{Html, Selector};
 use time::Instant;
 
@@ -47,19 +46,21 @@ fn main() {
             for child_with_text in children_with_text {
                 let childs_text = child_with_text.1;
 
-                ad = parser::parse_data_from_ad(childs_text, ad);
+                ad = parser::append_parsed_data(childs_text, ad);
             }
 
             ads.push(ad);
         }
     }
 
-    info!(
+    println!(
         "-------------------------------- ADS
         {:?}`",
         ads
     );
 
+    println!("total ads: {}", ads.len());
+
     let elapsed = start.elapsed();
-    info!("Temps écoulé: {:?}", elapsed);
+    println!("Temps écoulé: {:?}", elapsed);
 }

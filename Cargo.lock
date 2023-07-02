@@ -1082,7 +1082,6 @@ name = "scraper_leboncoin"
 version = "0.1.0"
 dependencies = [
  "dotenv",
- "log",
  "regex",
  "reqwest",
  "scraper",

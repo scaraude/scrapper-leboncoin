@@ -1,8 +1,6 @@
-use log::info;
-use std::{thread::sleep, time::Duration};
-
 use reqwest::header::HeaderMap;
 use serde_json::{Map, Value};
+use std::{thread::sleep, time::Duration};
 use url::Url;
 
 pub struct WebExplorator {
@@ -47,7 +45,7 @@ impl WebExplorator {
 
     fn get_one_page(&self) -> reqwest::Result<String> {
         let url = self.format_url();
-        info!("get_one_page => url => {url}");
+        println!("get_one_page => url => {url}");
 
         self.client
             .get(url)
@@ -64,7 +62,7 @@ impl WebExplorator {
 
         self.page += 1;
         let webpage = self.get_one_page().unwrap();
-        info!("wait...");
+        println!("wait...");
         sleep(Duration::from_secs(1));
 
         Ok(Some(webpage))
