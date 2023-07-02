@@ -35,7 +35,8 @@ fn convert_price_per_meter_square_string_to_u64(
 }
 
 fn parse_city_and_postal_code(location: &str) -> Option<Location> {
-    let re = Regex::new(r"^(?P<city_name>[^\d]+)\s+(?P<postal_code>\d{5})$").unwrap();
+    let re = Regex::new(r"(?i)(?P<city_name>\b[a-zÀ-ÿ' -]+\b\s)+(?P<postal_code>\d{2}[ ]?\d{3}\b)")
+        .unwrap();
 
     if let Some(captures) = re.captures(location) {
         let city_name = captures
