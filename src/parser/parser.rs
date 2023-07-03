@@ -125,14 +125,12 @@ fn find_date_in_past(
 }
 
 fn parse_date(date: &str) -> Result<NaiveDateTime, String> {
-    let regex_realtive_date =
+    let regex_relative_date =
         Regex::new(r"(?i)^(?P<relative_day>Hier|Aujourd'hui), (?P<time_str>\d{2}:\d{2})$").unwrap();
 
     let now = chrono::Local::now().naive_local().date();
 
-    println!("date: {}", date);
-
-    if let Some(captures) = regex_realtive_date.captures(date) {
+    if let Some(captures) = regex_relative_date.captures(date) {
         let relative_day = captures
             .name("relative_day")
             .expect("Failed to capture relative day")
@@ -150,7 +148,7 @@ fn parse_date(date: &str) -> Result<NaiveDateTime, String> {
             "Aujourd'hui" => {
                 format!("{} {}", now, time_str)
             }
-            _ => panic!("Unexpected relative day"),
+            _ => return Err("Unexpected relative day".to_string()),
         };
 
         return match NaiveDateTime::parse_from_str(&datetime_str, "%Y-%m-%d %H:%M") {
@@ -166,23 +164,23 @@ fn parse_date(date: &str) -> Result<NaiveDateTime, String> {
     if let Some(captures) = captures_date {
         let date = captures
             .name("date")
-            .expect("Failed to capture date")
+            .ok_or("Failed to capture date")?
             .as_str()
             .parse::<u32>()
             .expect("Failed to parse date in number");
         let month = captures
             .name("month")
-            .expect("Failed to capture month")
+            .ok_or("Failed to capture month")?
             .as_str();
         let time = captures
             .name("time")
-            .expect("Failed to capture time")
+            .ok_or("Failed to capture time")?
             .as_str();
         let time_as_naive_time =
             NaiveTime::parse_from_str(time, "%H:%M").expect("Failed to parse time");
 
         let month_in_number = TryInto::<u32>::try_into(
-            translate_month_to_number(month).expect("Failed to parse month"),
+            translate_month_to_number(month).ok_or("Failed to parse month")?,
         )
         .expect("Failed to parse month in number");
 
