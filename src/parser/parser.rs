@@ -26,6 +26,11 @@ fn check_is_location(input: &str) -> bool {
     regex.is_match(input)
 }
 
+fn check_is_date(input: &str) -> bool {
+    let regex = Regex::new(r"(?i)^(Hier|Aujourd'hui|\d{1,2} \w+), (\d{2}:\d{2})$").unwrap();
+    regex.is_match(input)
+}
+
 fn convert_price_string_to_u64(price_as_string: &str) -> Result<u64, ParseIntError> {
     let cleaned_input = price_as_string.replace(['\u{a0}', '€'], "");
     cleaned_input.parse::<u64>()
@@ -74,6 +79,8 @@ pub fn find_data_type(text: &str) -> DataType {
         DataType::PricePerSquare(convert_price_per_meter_square_string_to_u32(text).unwrap())
     } else if check_is_location(text) {
         DataType::Location(parse_city_and_postal_code(text).unwrap())
+    // } else if check_is_date(text) {
+    // parse_date(text)
     } else if check_is_professional(text) {
         DataType::SellerType(SellerType::Professional)
     } else {
@@ -97,5 +104,15 @@ mod tests {
         assert_eq!(check_is_professional("Pro "), false);
         assert_eq!(check_is_professional("something with Pro in it"), false);
         assert_eq!(check_is_professional("somethingwithProinit"), false);
+    }
+
+    #[test]
+    fn test_check_is_date() {
+        assert_eq!(check_is_date("Hier, 12:34"), true);
+        assert_eq!(check_is_date("Aujourd'hui, 23:59"), true);
+        assert_eq!(check_is_date("31 Dec, 00:00"), true);
+        assert_eq!(check_is_date("31 Mai, 03:00"), true);
+        assert_eq!(check_is_date("Invalid date"), false);
+        assert_eq!(check_is_date("Invalid date with 11:23"), false);
     }
 }
