@@ -124,67 +124,79 @@ fn find_date_in_past(
     Err(String::from("failed to find a date"))
 }
 
+fn parse_relative_date(
+    captures: regex::Captures<'_>,
+    now: chrono::NaiveDate,
+) -> Result<NaiveDateTime, String> {
+    let relative_day = captures
+        .name("relative_day")
+        .expect("Failed to capture relative day")
+        .as_str();
+    let time_str = captures
+        .name("time_str")
+        .expect("Failed to capture time string")
+        .as_str();
+
+    let datetime_str = match relative_day {
+        "Hier" => {
+            let yesterday = now - Duration::days(1);
+            format!("{} {}", yesterday, time_str)
+        }
+        "Aujourd'hui" => {
+            format!("{} {}", now, time_str)
+        }
+        _ => return Err("Unexpected relative day".to_string()),
+    };
+
+    return match NaiveDateTime::parse_from_str(&datetime_str, "%Y-%m-%d %H:%M") {
+        Ok(datetime) => Ok(datetime),
+        Err(_) => Err(String::from("Failed to parse date")),
+    };
+}
+
+fn parse_french_date(
+    captures: regex::Captures<'_>,
+    now: chrono::NaiveDate,
+) -> Result<NaiveDateTime, String> {
+    let date = captures
+        .name("date")
+        .ok_or("Failed to capture date")?
+        .as_str()
+        .parse::<u32>()
+        .expect("Failed to parse date in number");
+    let month = captures
+        .name("month")
+        .ok_or("Failed to capture month")?
+        .as_str();
+    let time = captures
+        .name("time")
+        .ok_or("Failed to capture time")?
+        .as_str();
+    let time_as_naive_time =
+        NaiveTime::parse_from_str(time, "%H:%M").expect("Failed to parse time");
+
+    let month_in_number =
+        TryInto::<u32>::try_into(translate_month_to_number(month).ok_or("Failed to parse month")?)
+            .expect("Failed to parse month in number");
+
+    return find_date_in_past(date, month_in_number, time_as_naive_time, now);
+}
+
 fn parse_date(date: &str) -> Result<NaiveDateTime, String> {
     let regex_relative_date =
         Regex::new(r"(?i)^(?P<relative_day>Hier|Aujourd'hui), (?P<time_str>\d{2}:\d{2})$").unwrap();
 
-    let now = chrono::Local::now().naive_local().date();
+    let now: chrono::NaiveDate = chrono::Local::now().naive_local().date();
 
     if let Some(captures) = regex_relative_date.captures(date) {
-        let relative_day = captures
-            .name("relative_day")
-            .expect("Failed to capture relative day")
-            .as_str();
-        let time_str = captures
-            .name("time_str")
-            .expect("Failed to capture time string")
-            .as_str();
-
-        let datetime_str = match relative_day {
-            "Hier" => {
-                let yesterday = now - Duration::days(1);
-                format!("{} {}", yesterday, time_str)
-            }
-            "Aujourd'hui" => {
-                format!("{} {}", now, time_str)
-            }
-            _ => return Err("Unexpected relative day".to_string()),
-        };
-
-        return match NaiveDateTime::parse_from_str(&datetime_str, "%Y-%m-%d %H:%M") {
-            Ok(datetime) => Ok(datetime),
-            Err(_) => Err(String::from("Failed to parse date")),
-        };
+        return parse_relative_date(captures, now);
     }
 
     let regex_date =
         Regex::new(r"(?i)^(?P<date>\d{1,2}) (?P<month>\w+), (?P<time>\d{2}:\d{2})$").unwrap();
-    let captures_date = regex_date.captures(date);
 
-    if let Some(captures) = captures_date {
-        let date = captures
-            .name("date")
-            .ok_or("Failed to capture date")?
-            .as_str()
-            .parse::<u32>()
-            .expect("Failed to parse date in number");
-        let month = captures
-            .name("month")
-            .ok_or("Failed to capture month")?
-            .as_str();
-        let time = captures
-            .name("time")
-            .ok_or("Failed to capture time")?
-            .as_str();
-        let time_as_naive_time =
-            NaiveTime::parse_from_str(time, "%H:%M").expect("Failed to parse time");
-
-        let month_in_number = TryInto::<u32>::try_into(
-            translate_month_to_number(month).ok_or("Failed to parse month")?,
-        )
-        .expect("Failed to parse month in number");
-
-        return find_date_in_past(date, month_in_number, time_as_naive_time, now);
+    if let Some(captures) = regex_date.captures(date) {
+        return parse_french_date(captures, now);
     }
 
     return Err("Failed to parse date".to_string());
