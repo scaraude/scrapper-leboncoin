@@ -23,7 +23,7 @@ pub struct Ad {
     pub surface: Option<u64>,
     pub seller_type: SellerType,
     // pub title: Option<String>,
-    // pub publication_date: Date,
+    pub publication_date: Option<chrono::NaiveDateTime>,
 }
 
 impl fmt::Display for Ad {
@@ -31,17 +31,24 @@ impl fmt::Display for Ad {
         if let Some(price) = self.price {
             write!(f, "Price: {}\n", price)?;
         }
+
         if let Some(price_per_square_meter) = self.price_per_square_meter {
             write!(f, "Price per square meter: {}\n", price_per_square_meter)?;
         }
+
         if let Some(location) = &self.location {
             write!(f, "{}", location)?;
         }
+
         if let Some(surface) = &self.surface {
             write!(f, "Surface: {} m²\n", surface)?;
         }
 
         write!(f, "Seller type: {}\n", &self.seller_type)?;
+
+        if let Some(publication_date) = &self.publication_date {
+            write!(f, "Publication date: {}\n", publication_date)?;
+        }
 
         Ok(())
     }
@@ -59,6 +66,7 @@ impl Ad {
             location,
             surface: None,
             seller_type: SellerType::Owner,
+            publication_date: None,
         }
     }
 }

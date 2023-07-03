@@ -1,13 +1,14 @@
-use regex::Regex;
-use std::num::ParseIntError;
-
 use crate::ad::{Location, SellerType};
+use chrono::{Datelike, Duration, NaiveDateTime, NaiveTime};
+use regex::Regex;
+use std::{collections::HashMap, num::ParseIntError};
 
 pub enum DataType {
     Price(u64),
     PricePerSquare(u32),
     Location(Location),
     SellerType(SellerType),
+    PublicationDate(NaiveDateTime),
     None,
 }
 
@@ -23,11 +24,6 @@ fn check_is_price_per_meter_square(input: &str) -> bool {
 
 fn check_is_location(input: &str) -> bool {
     let regex = Regex::new(r"(?i)\b[a-zÀ-ÿ' -]+\b\s+\d{2}[ ]?\d{3}\b").unwrap();
-    regex.is_match(input)
-}
-
-fn check_is_date(input: &str) -> bool {
-    let regex = Regex::new(r"(?i)^(Hier|Aujourd'hui|\d{1,2} \w+), (\d{2}:\d{2})$").unwrap();
     regex.is_match(input)
 }
 
@@ -72,15 +68,148 @@ fn check_is_professional(input: &str) -> bool {
     input.eq("Pro")
 }
 
+fn translate_month_to_number(french_month: &str) -> Option<usize> {
+    let dict_month_french_english: HashMap<&str, usize> = [
+        ("janvier", 1),
+        ("février", 2),
+        ("mars", 3),
+        ("avril", 4),
+        ("mai", 5),
+        ("juin", 6),
+        ("juillet", 7),
+        ("août", 8),
+        ("septembre", 9),
+        ("octobre", 10),
+        ("novembre", 11),
+        ("décembre", 12),
+    ]
+    .iter()
+    .cloned()
+    .collect();
+
+    dict_month_french_english.get(french_month).cloned()
+}
+
+fn check_is_date(input: &str) -> bool {
+    let regex = Regex::new(r"(?i)^(Hier|Aujourd'hui|\d{1,2} \w+), (\d{2}:\d{2})$").unwrap();
+    regex.is_match(input)
+}
+
+fn find_date_in_past(
+    day: u32,
+    month_in_number: u32,
+    time: NaiveTime,
+    now: chrono::NaiveDate,
+) -> Result<NaiveDateTime, String> {
+    let mut time_cursor = now
+        .with_day(day)
+        .expect("Failed te change day in date")
+        .and_time(time);
+
+    if now.month() == month_in_number {
+        return Ok(time_cursor);
+    }
+
+    for _i in 0..13 {
+        time_cursor -= chrono::Duration::days(28);
+
+        if now.month() == month_in_number {
+            return Ok(NaiveDateTime::new(
+                now.with_day(day).expect("Failed te change day in date"),
+                time,
+            ));
+        }
+    }
+
+    Err(String::from("failed to find a date"))
+}
+
+fn parse_date(date: &str) -> Result<NaiveDateTime, String> {
+    let regex_realtive_date =
+        Regex::new(r"(?i)^(?P<relative_day>Hier|Aujourd'hui), (?P<time_str>\d{2}:\d{2})$").unwrap();
+
+    let now = chrono::Local::now().naive_local().date();
+
+    println!("date: {}", date);
+
+    if let Some(captures) = regex_realtive_date.captures(date) {
+        let relative_day = captures
+            .name("relative_day")
+            .expect("Failed to capture relative day")
+            .as_str();
+        let time_str = captures
+            .name("time_str")
+            .expect("Failed to capture time string")
+            .as_str();
+
+        let datetime_str = match relative_day {
+            "Hier" => {
+                let yesterday = now - Duration::days(1);
+                format!("{} {}", yesterday, time_str)
+            }
+            "Aujourd'hui" => {
+                format!("{} {}", now, time_str)
+            }
+            _ => panic!("Unexpected relative day"),
+        };
+
+        return match NaiveDateTime::parse_from_str(&datetime_str, "%Y-%m-%d %H:%M") {
+            Ok(datetime) => Ok(datetime),
+            Err(_) => Err(String::from("Failed to parse date")),
+        };
+    }
+
+    let regex_date =
+        Regex::new(r"(?i)^(?P<date>\d{1,2}) (?P<month>\w+), (?P<time>\d{2}:\d{2})$").unwrap();
+    let captures_date = regex_date.captures(date);
+
+    if let Some(captures) = captures_date {
+        let date = captures
+            .name("date")
+            .expect("Failed to capture date")
+            .as_str()
+            .parse::<u32>()
+            .expect("Failed to parse date in number");
+        let month = captures
+            .name("month")
+            .expect("Failed to capture month")
+            .as_str();
+        let time = captures
+            .name("time")
+            .expect("Failed to capture time")
+            .as_str();
+        let time_as_naive_time =
+            NaiveTime::parse_from_str(time, "%H:%M").expect("Failed to parse time");
+
+        let month_in_number = TryInto::<u32>::try_into(
+            translate_month_to_number(month).expect("Failed to parse month"),
+        )
+        .expect("Failed to parse month in number");
+
+        return find_date_in_past(date, month_in_number, time_as_naive_time, now);
+    }
+
+    return Err("Failed to parse date".to_string());
+}
+
 pub fn find_data_type(text: &str) -> DataType {
     if check_is_price(text) {
-        DataType::Price(convert_price_string_to_u64(text).unwrap())
+        DataType::Price(convert_price_string_to_u64(text).expect("Failed to parse price"))
     } else if check_is_price_per_meter_square(text) {
-        DataType::PricePerSquare(convert_price_per_meter_square_string_to_u32(text).unwrap())
+        DataType::PricePerSquare(
+            convert_price_per_meter_square_string_to_u32(text)
+                .expect("Failed to parse price per meter square"),
+        )
     } else if check_is_location(text) {
-        DataType::Location(parse_city_and_postal_code(text).unwrap())
-    // } else if check_is_date(text) {
-    // parse_date(text)
+        DataType::Location(parse_city_and_postal_code(text).expect("Failed to parse location"))
+    } else if check_is_date(text) {
+        match parse_date(text) {
+            Ok(parsed_date) => DataType::PublicationDate(parsed_date),
+            Err(e) => {
+                println!("Failed to parse date: {}", e);
+                DataType::None
+            }
+        }
     } else if check_is_professional(text) {
         DataType::SellerType(SellerType::Professional)
     } else {

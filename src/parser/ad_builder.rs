@@ -26,6 +26,9 @@ pub fn get_ad_from_children_with_text(children_with_text: Enumerate<Text<'_>>) -
             parser::DataType::SellerType(seller_type) => {
                 ad.seller_type = seller_type;
             }
+            parser::DataType::PublicationDate(date) => {
+                ad.publication_date = Some(date);
+            }
             parser::DataType::None => {
                 println!(
                     "La chaîne '{}' ne correspond à aucune des datas collectées",
