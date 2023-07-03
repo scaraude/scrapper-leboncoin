@@ -13,6 +13,8 @@ pub fn get_ad_from_children_with_text(
 ) -> Ad {
     let mut ad = Ad::new_empty();
 
+    ad.title = parser::try_get_title(element);
+
     for child_with_text in children_with_text {
         let childs_text = child_with_text.1;
 
@@ -33,10 +35,17 @@ pub fn get_ad_from_children_with_text(
                 ad.publication_date = Some(date);
             }
             parser::DataType::None => {
-                println!(
-                    "La chaîne '{}' ne correspond à aucune des datas collectées",
-                    childs_text
-                );
+                if ad
+                    .title
+                    .to_owned()
+                    .map(|title| title != childs_text)
+                    .unwrap_or(true)
+                {
+                    println!(
+                        "La chaîne '{}' ne correspond à aucune des datas collectées",
+                        childs_text
+                    );
+                }
             }
         }
     }
@@ -46,6 +55,5 @@ pub fn get_ad_from_children_with_text(
             ad.price_per_square_meter.unwrap() as u64,
         ))
     }
-    ad.title = parser::try_get_title(element);
     ad
 }
