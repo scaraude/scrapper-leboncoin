@@ -22,6 +22,7 @@ pub fn app() {
 
             ads.push(ad_builder::get_ad_from_children_with_text(
                 children_with_text,
+                element,
             ));
         }
     }

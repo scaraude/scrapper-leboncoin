@@ -22,12 +22,16 @@ pub struct Ad {
     pub location: Option<Location>,
     pub surface: Option<u64>,
     pub seller_type: SellerType,
-    // pub title: Option<String>,
+    pub title: Option<String>,
     pub publication_date: Option<chrono::NaiveDateTime>,
 }
 
 impl fmt::Display for Ad {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(title) = self.title.to_owned() {
+            write!(f, "Title: {}\n", title)?;
+        }
+
         if let Some(price) = self.price {
             write!(f, "Price: {}\n", price)?;
         }
@@ -55,18 +59,15 @@ impl fmt::Display for Ad {
 }
 
 impl Ad {
-    pub fn new(
-        price: Option<u64>,
-        price_per_square_meter: Option<u32>,
-        location: Option<Location>,
-    ) -> Self {
+    pub fn new_empty() -> Self {
         Ad {
-            price,
-            price_per_square_meter,
-            location,
+            price: None,
+            price_per_square_meter: None,
+            location: None,
             surface: None,
             seller_type: SellerType::Owner,
             publication_date: None,
+            title: None,
         }
     }
 }

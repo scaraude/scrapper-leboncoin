@@ -1,6 +1,7 @@
 use crate::ad::{Location, SellerType};
 use chrono::{Datelike, Duration, NaiveDateTime, NaiveTime};
 use regex::Regex;
+use scraper::{ElementRef, Selector};
 use std::{collections::HashMap, num::ParseIntError};
 
 pub enum DataType {
@@ -225,6 +226,17 @@ pub fn find_data_type(text: &str) -> DataType {
     } else {
         DataType::None
     }
+}
+
+pub fn try_get_title(element: ElementRef<'_>) -> Option<String> {
+    let title_selector = Selector::parse(r#"p[data-qa-id="aditem_title"]"#).unwrap();
+    for elem in element.select(&title_selector) {
+        let children_with_text = elem.text().collect::<Vec<_>>();
+        if !children_with_text.is_empty() {
+            return Some(children_with_text.join(" "));
+        }
+    }
+    None
 }
 
 #[cfg(test)]
