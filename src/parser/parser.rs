@@ -46,21 +46,24 @@ fn convert_price_per_meter_square_string_to_u32(
     cleaned_input.parse::<u32>()
 }
 
+fn convert_match_to_string(captures: regex::Match<'_>) -> Option<String> {
+    Some(captures.as_str().trim().to_string())
+}
+
 fn parse_city_and_postal_code(location: &str) -> Option<Location> {
     let re = Regex::new(r"(?i)(?P<city_name>\b[a-zÀ-ÿ' -]+\b\s)+(?P<postal_code>\d{2}[ ]?\d{3}\b)")
         .unwrap();
 
     if let Some(captures) = re.captures(location) {
-        let city_name = captures
-            .name("city_name")
-            .unwrap()
-            .as_str()
-            .trim()
-            .to_string();
-        let postal_code = captures.name("postal_code").unwrap().as_str().to_string();
+        let city_name = captures.name("city_name").and_then(convert_match_to_string);
+
+        let postal_code = captures
+            .name("postal_code")
+            .and_then(convert_match_to_string);
+
         Some(Location {
-            city_name: Some(city_name),
-            postal_code: Some(postal_code),
+            city_name: city_name,
+            postal_code: postal_code,
         })
     } else {
         None

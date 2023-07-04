@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, time::Instant};
 
 use scraper::{Html, Selector};
 
@@ -18,6 +18,8 @@ pub fn get_data() -> Vec<Ad> {
     );
 
     for webpage in pagined_website {
+        let wabpage_analyse_start = Instant::now();
+
         let document = Html::parse_document(webpage.unwrap().as_str());
 
         for element in document.select(&selector) {
@@ -28,6 +30,10 @@ pub fn get_data() -> Vec<Ad> {
                 element,
             ));
         }
+        println!(
+            "wabpage analyse execution time: {:?}",
+            wabpage_analyse_start.elapsed()
+        );
     }
     ads
 }

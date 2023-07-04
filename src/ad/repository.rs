@@ -37,13 +37,13 @@ fn is_duplicated(client: &Client, ad: &Ad) -> bool {
 
     let filter = doc! {
         "title": &ad.title,
-        "price": ad.price.unwrap() as u32,
+        "price": ad.price.and_then(|price| Some(price as u32)),
         "location":{
-            "city_name": &ad.location.as_ref().unwrap().city_name,
-            "postal_code": &ad.location.as_ref().unwrap().postal_code,
+            "city_name": &ad.location.as_ref().and_then(|loc| loc.city_name.as_ref()),
+            "postal_code": &ad.location.as_ref().and_then(|loc| loc.postal_code.as_ref()),
             },
         "price_per_square_meter": ad.price_per_square_meter,
-        "surface": ad.surface.unwrap() as u32,
+        "surface": ad.surface.and_then(|surface| Some(surface as u32)),
         "seller_type": ad.seller_type.to_string(),
         "publication_date": date_iso_8601,
         "url": &ad.url,
