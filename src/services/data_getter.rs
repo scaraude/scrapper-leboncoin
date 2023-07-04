@@ -2,7 +2,9 @@ use std::env;
 
 use scraper::{Html, Selector};
 
-use crate::{ad::Ad, helper, pagined_website_explorator::PaginedWebsite, parser::ad_builder};
+use crate::{
+    ad::entity::Ad, helper, pagined_website_explorator::PaginedWebsite, parser::ad_builder,
+};
 
 pub fn get_data() -> Vec<Ad> {
     let mut ads: Vec<Ad> = vec![];

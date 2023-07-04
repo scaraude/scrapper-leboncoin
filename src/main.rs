@@ -1,16 +1,17 @@
 mod ad;
 mod app;
+mod database;
 mod helper;
 mod pagined_website_explorator;
 mod parser;
 mod services;
-
 extern crate dotenv;
 extern crate scraper;
 use dotenv::dotenv;
 use time::Instant;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     dotenv().unwrap_or_else(|err| {
         panic!(
             "Erreur lors du chargement des variables d'environnement : {}",
@@ -20,7 +21,7 @@ fn main() {
 
     let time_app_start = Instant::now();
 
-    app::app();
+    app::app().await;
 
     println!("App execution time: {:?}", time_app_start.elapsed());
 }

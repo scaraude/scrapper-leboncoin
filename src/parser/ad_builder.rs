@@ -1,5 +1,6 @@
+use crate::ad::entity::Ad;
+
 use super::parser;
-use crate::ad::Ad;
 use scraper::{element_ref::Text, ElementRef};
 use std::iter::Enumerate;
 

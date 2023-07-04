@@ -26,6 +26,8 @@ pub struct Ad {
     pub publication_date: Option<chrono::NaiveDateTime>,
 }
 
+pub type Ads = Vec<Ad>;
+
 impl fmt::Display for Ad {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(title) = self.title.to_owned() {

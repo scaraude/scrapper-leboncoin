@@ -1,7 +1,9 @@
-use crate::{ad::Ad, services};
+use crate::{ad::entity::Ads, database, services};
 
-pub fn app() {
-    let ads: Vec<Ad> = services::data_getter::get_data();
+pub async fn app() {
+    let client = database::service::init().await.unwrap();
+
+    let ads: Ads = services::data_getter::get_data();
 
     let number_of_ads = ads.len();
 

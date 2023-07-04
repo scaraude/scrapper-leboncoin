@@ -1,5 +1,6 @@
+use crate::ad::entity::{Location, SellerType};
+
 use super::parse_date::{check_is_date, parse_date};
-use crate::ad::{Location, SellerType};
 use chrono::NaiveDateTime;
 use regex::Regex;
 use scraper::{ElementRef, Selector};
