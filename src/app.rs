@@ -1,7 +1,10 @@
 use crate::{ad::entity::Ads, database, services};
 
-pub async fn app() {
-    let client = database::service::init().await.unwrap();
+pub fn app() {
+    match database::service::init() {
+        Ok(_) => println!("Pinged your deployment. You successfully connected to MongoDB! ✅"),
+        Err(_) => println!("Ping failed, you're not connected to DB... ❌"),
+    }
 
     let ads: Ads = services::data_getter::get_data();
 

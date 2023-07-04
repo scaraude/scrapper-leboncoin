@@ -10,8 +10,7 @@ extern crate scraper;
 use dotenv::dotenv;
 use time::Instant;
 
-#[tokio::main]
-async fn main() {
+fn main() {
     dotenv().unwrap_or_else(|err| {
         panic!(
             "Erreur lors du chargement des variables d'environnement : {}",
@@ -21,7 +20,7 @@ async fn main() {
 
     let time_app_start = Instant::now();
 
-    app::app().await;
+    app::app();
 
     println!("App execution time: {:?}", time_app_start.elapsed());
 }
