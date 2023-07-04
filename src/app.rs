@@ -9,9 +9,9 @@ pub fn app() {
 
     let number_of_ads = ads.len();
 
-    for ad in ads {
-        println!("{}", ad);
-    }
+    // for ad in ads {
+    //     println!("{}", ad);
+    // }
 
     println!("total ads: {}", number_of_ads);
 }
