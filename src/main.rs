@@ -1,7 +1,6 @@
 mod ad;
 mod app;
 mod helper;
-mod memoization;
 mod pagined_website_explorator;
 mod parser;
 mod services;
