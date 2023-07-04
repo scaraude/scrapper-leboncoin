@@ -15,6 +15,7 @@ pub fn get_ad_from_children_with_text(
     let mut ad = Ad::new_empty();
 
     ad.title = parser::try_get_title(element);
+    ad.url = parser::try_get_ad_url(element).map(|url| url.to_string());
 
     for child_with_text in children_with_text {
         let childs_text = child_with_text.1;

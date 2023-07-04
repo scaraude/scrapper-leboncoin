@@ -46,6 +46,7 @@ fn is_duplicated(client: &Client, ad: &Ad) -> bool {
         "surface": ad.surface.unwrap() as u32,
         "seller_type": ad.seller_type.to_string(),
         "publication_date": date_iso_8601,
+        "url": &ad.url,
     };
 
     collection.find_one(filter, None).unwrap().is_some()

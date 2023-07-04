@@ -107,6 +107,10 @@ pub fn try_get_title(element: ElementRef<'_>) -> Option<String> {
     None
 }
 
+pub fn try_get_ad_url(element: ElementRef<'_>) -> Option<&str> {
+    element.value().attr("href")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

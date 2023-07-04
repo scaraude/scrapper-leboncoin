@@ -26,6 +26,7 @@ pub struct Ad {
     pub seller_type: SellerType,
     pub title: Option<String>,
     pub publication_date: Option<chrono::NaiveDateTime>,
+    pub url: Option<String>,
 }
 
 pub type Ads = Vec<Ad>;
@@ -58,6 +59,10 @@ impl fmt::Display for Ad {
             write!(f, "Publication date: {}\n", publication_date)?;
         }
 
+        if let Some(url) = &self.url {
+            write!(f, "URL: {}\n", url)?;
+        }
+
         Ok(())
     }
 }
@@ -72,6 +77,7 @@ impl Ad {
             seller_type: SellerType::Owner,
             publication_date: None,
             title: None,
+            url: None,
         }
     }
 }
