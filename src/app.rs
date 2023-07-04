@@ -7,11 +7,5 @@ pub fn app() {
 
     crate::ad::repository::persist_ads(&client, &ads);
 
-    let number_of_ads = ads.len();
-
-    // for ad in ads {
-    //     println!("{}", ad);
-    // }
-
-    println!("total ads: {}", number_of_ads);
+    println!("total ads: {}", ads.len());
 }

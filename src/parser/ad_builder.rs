@@ -35,19 +35,7 @@ pub fn get_ad_from_children_with_text(
             parser::DataType::PublicationDate(date) => {
                 ad.publication_date = Some(date);
             }
-            parser::DataType::None => {
-                // if ad
-                //     .title
-                //     .to_owned()
-                //     .map(|title| title != childs_text)
-                //     .unwrap_or(true)
-                // {
-                //     println!(
-                //         "La chaîne '{}' ne correspond à aucune des datas collectées",
-                //         childs_text
-                //     );
-                // }
-            }
+            parser::DataType::None => {}
         }
     }
     if ad.price.is_some() && ad.price_per_square_meter.is_some() {
