@@ -1,6 +1,8 @@
 use std::fmt;
 
-#[derive(Debug)]
+use serde::Serialize;
+
+#[derive(Debug, Serialize)]
 pub enum SellerType {
     Owner,
     Professional,
@@ -15,7 +17,7 @@ impl fmt::Display for SellerType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Ad {
     pub price: Option<u64>,
     pub price_per_square_meter: Option<u32>,
@@ -74,7 +76,7 @@ impl Ad {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Location {
     pub city_name: Option<String>,
     pub postal_code: Option<String>,

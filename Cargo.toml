@@ -15,7 +15,7 @@ url = "2.2.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 dotenv = "0.15.0"
-chrono = "0.4.26"
+chrono = { version = "0.4.26", features = ["serde"] }
 
 [dependencies.mongodb]
 version = "2.6.0"

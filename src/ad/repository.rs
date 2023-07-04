@@ -1,18 +1,16 @@
-// use super::entity::Ad;
-// use mongodb::bson::{doc, Document};
+use super::entity::Ad;
+use mongodb::sync::Client;
 
-// const DB_NAME: &str = "scraper_leboncoin";
-// const COLLECTION_NAME: &str = "Ads";
+const DB_NAME: &str = "scraper_leboncoin";
+const COLLECTION_NAME: &str = "ads";
 
-// pub async fn persist_ads(client: &mongodb::Client, ads: Vec<Ad>) {
-//     let db = client.database(DB_NAME);
-//     let collection = db.collection::<Document>(COLLECTION_NAME);
+pub fn persist_ads(client: &Client, ads: &Vec<Ad>) {
+    let database = client.database(DB_NAME);
+    let collection = database.collection::<Ad>(COLLECTION_NAME);
 
-//     let docs = vec![
-//         doc! { "title": "1984", "author": "George Orwell" },
-//         doc! { "title": "Animal Farm", "author": "George Orwell" },
-//         doc! { "title": "The Great Gatsby", "author": "F. Scott Fitzgerald" },
-//     ];
+    let result = collection
+        .insert_many(ads, None)
+        .expect("Failed to persist ads");
 
-//     collection.insert_many(ads, None).await.unwrap();
-// }
+    println!("Persisted {} ads", result.inserted_ids.len());
+}

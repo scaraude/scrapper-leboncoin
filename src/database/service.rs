@@ -4,7 +4,7 @@ use mongodb::{
     sync::Client,
 };
 
-pub fn init() -> mongodb::error::Result<()> {
+pub fn init() -> mongodb::error::Result<Client> {
     let database_uri = format!(
         "mongodb+srv://{}:{}@cluster0.uanhfot.mongodb.net/?retryWrites=true&w=majority",
         std::env::var("DATABASE_USERNAME").unwrap(),
@@ -16,8 +16,10 @@ pub fn init() -> mongodb::error::Result<()> {
     client_options.server_api = Some(server_api);
 
     let client = Client::with_options(client_options)?;
+
     client
         .database("admin")
         .run_command(doc! {"ping": 1}, None)?;
-    Ok(())
+
+    Ok(client)
 }
