@@ -4,6 +4,7 @@ mod helper;
 mod memoization;
 mod pagined_website_explorator;
 mod parser;
+mod services;
 
 extern crate dotenv;
 extern crate scraper;
