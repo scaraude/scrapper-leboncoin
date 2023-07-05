@@ -21,6 +21,7 @@ pub fn get_data() -> Vec<Ad> {
         let webpage_analyse_start = Instant::now();
 
         if webpage.is_err() {
+            eprintln!("Error: {}", webpage.unwrap_err());
             continue;
         }
 

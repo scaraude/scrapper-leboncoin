@@ -18,10 +18,10 @@ fn find_date_in_past(
         return Ok(time_cursor);
     }
 
-    for _i in 0..13 {
+    for _i in 0..14 {
         time_cursor -= chrono::Duration::days(28);
 
-        if now.month() == month_in_number {
+        if time_cursor.month() == month_in_number {
             return Ok(NaiveDateTime::new(
                 now.with_day(day).expect("Failed te change day in date"),
                 time,
