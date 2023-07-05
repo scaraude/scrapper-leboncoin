@@ -19,7 +19,7 @@ impl PaginedWebsite {
             headers,
             client: reqwest::blocking::Client::new(),
             base_url: base_url.to_owned(),
-            page: 42,
+            page: 0,
             total_page: 100,
         }
     }
