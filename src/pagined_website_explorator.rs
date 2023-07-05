@@ -1,6 +1,5 @@
 use reqwest::header::HeaderMap;
 use serde_json::{Map, Value};
-use std::{thread::sleep, time::Duration};
 use url::Url;
 
 pub struct PaginedWebsite {
@@ -62,8 +61,6 @@ impl PaginedWebsite {
 
         self.page += 1;
         let webpage = self.get_one_page().unwrap();
-        println!("wait...");
-        sleep(Duration::from_secs(1));
 
         Ok(Some(webpage))
     }
