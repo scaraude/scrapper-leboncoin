@@ -27,6 +27,7 @@ pub struct Ad {
     pub title: Option<String>,
     pub publication_date: Option<chrono::NaiveDateTime>,
     pub url: Option<String>,
+    pub hash_value: Option<String>,
 }
 
 pub type Ads = Vec<Ad>;
@@ -78,6 +79,7 @@ impl Ad {
             publication_date: None,
             title: None,
             url: None,
+            hash_value: None,
         }
     }
 }
