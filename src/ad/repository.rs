@@ -43,23 +43,64 @@ pub fn persist_ads(client: &Client, ads: &Vec<Ad>) {
 fn is_duplicated(client: &Client, ad: &Ad) -> bool {
     let collection = get_collection(&client);
 
-    let date_iso_8601 = ad
-        .publication_date
-        .and_then(|date| Some(date.format("%Y-%m-%dT%H:%M:%S").to_string()));
+    let duplicated_ad_suspected = collection
+        .find(doc! { "hash_value": &ad.hash_value}, None)
+        .unwrap();
 
-    let filter = doc! {
-        "title": &ad.title,
-        "price": ad.price.and_then(|price| Some(price as u32)),
-        "location":{
-            "city_name": &ad.location.as_ref().and_then(|loc| loc.city_name.as_ref()),
-            "postal_code": &ad.location.as_ref().and_then(|loc| loc.postal_code.as_ref()),
-            },
-        "price_per_square_meter": ad.price_per_square_meter,
-        "surface": ad.surface.and_then(|surface| Some(surface as u32)),
-        "seller_type": ad.seller_type.to_string(),
-        "publication_date": date_iso_8601,
-        "url": &ad.url,
-    };
-
-    collection.find_one(filter, None).unwrap().is_some()
+    duplicated_ad_suspected
+        .into_iter()
+        .any(|suspected_ad_result| {
+            if let Ok(suspected_ad) = suspected_ad_result {
+                suspected_ad.url == ad.url && suspected_ad.title == ad.title
+            } else {
+                false
+            }
+        })
 }
+
+// #[cfg(test)]
+// mod test {
+//     use std::hash::{Hash, Hasher};
+//     extern crate dotenv;
+
+//     use dotenv::dotenv;
+
+//     use mongodb::bson::doc;
+
+//     use crate::database;
+
+//     use super::get_collection;
+
+//     fn get_hash(ad: &crate::ad::entity::Ad) -> Option<String> {
+//         let mut hasher = std::collections::hash_map::DefaultHasher::new();
+//         ad.hash(&mut hasher);
+//         Some(hasher.finish().to_string())
+//     }
+
+//     #[test]
+//     fn test() {
+//         dotenv().unwrap_or_else(|err| {
+//             panic!(
+//                 "Erreur lors du chargement des variables d'environnement : {}",
+//                 err
+//             );
+//         });
+
+//         let client = database::service::init().unwrap();
+
+//         let collection = get_collection(&client);
+
+//         let all_documents_in_collection = collection.find(None, None).unwrap();
+
+//         for document in all_documents_in_collection {
+//             for document in all_documents_in_collection {
+//                 if let Ok(mut ad) = document {
+//                     if ad.hash_value.is_none() {
+//                         ad.hash_value = get_hash(&ad);
+//                         let update = doc! { "$set": { "hash_value": ad.hash_value }};
+//                         collection.update_one(filter, update, None).unwrap();
+//                     }
+//                 }
+//         }
+//     }
+// }
