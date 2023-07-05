@@ -20,6 +20,10 @@ pub fn get_data() -> Vec<Ad> {
     for webpage in pagined_website {
         let webpage_analyse_start = Instant::now();
 
+        if webpage.is_err() {
+            continue;
+        }
+
         let mut has_element = false;
 
         let document = Html::parse_document(webpage.unwrap().as_str());
@@ -35,6 +39,7 @@ pub fn get_data() -> Vec<Ad> {
         }
 
         if !has_element {
+            println!("No more annonce... 🙅‍♂️");
             break;
         }
 
