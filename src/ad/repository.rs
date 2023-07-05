@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use super::entity::Ad;
 use mongodb::{bson::doc, sync::Client};
 
@@ -7,10 +9,7 @@ const COLLECTION_NAME: &str = "ads";
 fn get_collection(client: &Client) -> mongodb::sync::Collection<Ad> {
     client.database(DB_NAME).collection(COLLECTION_NAME)
 }
-
-pub fn persist_ads(client: &Client, ads: &Vec<Ad>) {
-    let collection = get_collection(&client);
-
+fn get_unique_documents<'a>(client: &'a Client, ads: &'a Vec<Ad>) -> Vec<&'a Ad> {
     let mut unique_documents: Vec<&Ad> = vec![];
     let mut duplicated_document_count = 0;
     for ad in ads {
@@ -21,6 +20,19 @@ pub fn persist_ads(client: &Client, ads: &Vec<Ad>) {
         }
     }
     println!("duplicated document count: {}", duplicated_document_count);
+
+    unique_documents
+}
+
+pub fn persist_ads(client: &Client, ads: &Vec<Ad>) {
+    let collection = get_collection(&client);
+
+    let duplication_analyse_start = Instant::now();
+    let unique_documents: Vec<&Ad> = get_unique_documents(client, ads);
+    println!(
+        "Duplication analyse execution time: {:?}",
+        duplication_analyse_start.elapsed()
+    );
 
     match collection.insert_many(unique_documents, None) {
         Ok(result) => println!("Persisted {} ads", result.inserted_ids.len()),

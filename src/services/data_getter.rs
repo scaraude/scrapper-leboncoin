@@ -18,7 +18,7 @@ pub fn get_data() -> Vec<Ad> {
     );
 
     for webpage in pagined_website {
-        let wabpage_analyse_start = Instant::now();
+        let webpage_analyse_start = Instant::now();
 
         let mut has_element = false;
 
@@ -39,8 +39,8 @@ pub fn get_data() -> Vec<Ad> {
         }
 
         println!(
-            "wabpage analyse execution time: {:?}",
-            wabpage_analyse_start.elapsed()
+            "webpage analyse execution time: {:?}",
+            webpage_analyse_start.elapsed()
         );
     }
     ads
