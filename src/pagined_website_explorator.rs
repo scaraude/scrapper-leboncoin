@@ -60,9 +60,14 @@ impl PaginedWebsite {
         }
 
         self.page += 1;
-        let webpage = self.get_one_page().unwrap();
 
-        Ok(Some(webpage))
+        return match self.get_one_page() {
+            Ok(html_text) => Ok(Some(html_text)),
+            Err(err) => {
+                eprintln!("Error: {}", err);
+                Err(err)
+            }
+        };
     }
 }
 
