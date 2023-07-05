@@ -20,16 +20,24 @@ pub fn get_data() -> Vec<Ad> {
     for webpage in pagined_website {
         let wabpage_analyse_start = Instant::now();
 
+        let mut has_element = false;
+
         let document = Html::parse_document(webpage.unwrap().as_str());
 
-        for element in document.select(&selector) {
+        let selected_elements: scraper::html::Select<'_, '_> = document.select(&selector);
+
+        for element in selected_elements {
+            has_element = true;
             let children_with_text = element.text().enumerate();
 
-            ads.push(ad_builder::get_ad_from_children_with_text(
-                children_with_text,
-                element,
-            ));
+            let ad = ad_builder::get_ad_from_children_with_text(children_with_text, element);
+            ads.push(ad)
         }
+
+        if !has_element {
+            break;
+        }
+
         println!(
             "wabpage analyse execution time: {:?}",
             wabpage_analyse_start.elapsed()
